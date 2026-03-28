@@ -138,11 +138,23 @@ Or via environment variables:
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 GEMINI_API_KEY=...
+LLLLM_FALLBACK_MODEL=claude:claude-sonnet-4-6
 
 Ollama:
 
 No API key required
 Runs on http://localhost:11434
+Fallback behavior:
+
+LLLLM retries a failed primary request up to 5 times.
+If all 5 attempts fail, it checks `LLLLM_FALLBACK_MODEL`.
+If that environment variable is set, it switches to the configured secondary `provider:model` and retries that target up to 5 times as well.
+If no fallback target is configured, it raises an exception instead of guessing a default secondary provider.
+
+Why this helps:
+
+It gives applications a simple resilience layer when a provider has temporary outages, request instability, or rate-limit issues.
+It also lets teams define their own backup provider strategy through environment configuration without hardcoding failover logic in application code.
 7. ⚙️ Minimal Parameter Interface
 response = client.gen(
     "Write a short intelligence report",
@@ -174,6 +186,25 @@ client = LLLLM("ollama:gemma3")
 res = client.gen("Summarize cyber threat intelligence")
 
 print(res["llllm_response"]["text"])
+
+Fallback example:
+
+Set:
+
+OPENAI_API_KEY=...
+ANTHROPIC_API_KEY=...
+LLLLM_FALLBACK_MODEL=claude:claude-sonnet-4-6
+
+Then:
+
+from llllm import LLLLM
+
+client = LLLLM("openai:gpt-5.4")
+res = client.gen("Summarize cyber threat intelligence")
+
+print(res["llllm_response"]["text"])
+
+In this setup, LLLLM tries OpenAI first. If 5 attempts fail, it logs the failure, logs that the fallback is being used, and then retries against Claude up to 5 times.
 🏗️ Architecture
 llllm/
 │

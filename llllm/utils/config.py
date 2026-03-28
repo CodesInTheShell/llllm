@@ -13,6 +13,8 @@ ENV_VAR_BY_PROVIDER = {
     "gemini": "GEMINI_API_KEY",
 }
 
+FALLBACK_MODEL_ENV_VAR = "LLLLM_FALLBACK_MODEL"
+
 
 def parse_model_spec(model_spec: str) -> tuple[str, str]:
     """Split 'provider:model' into its parts and validate the provider."""
@@ -45,3 +47,14 @@ def resolve_api_key(provider: str, explicit_api_key: str | None) -> str | None:
         return None
 
     return os.getenv(env_var)
+
+
+def resolve_fallback_model() -> str | None:
+    """Return the configured fallback provider:model target, if any."""
+
+    value = os.getenv(FALLBACK_MODEL_ENV_VAR)
+    if value is None:
+        return None
+
+    fallback_model = value.strip()
+    return fallback_model or None

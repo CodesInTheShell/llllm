@@ -317,6 +317,37 @@ export ANTHROPIC_API_KEY=...
 export GEMINI_API_KEY=...
 ```
 
+You can also configure a fallback provider and model through the environment:
+
+```bash
+export LLLLM_FALLBACK_MODEL=claude:claude-sonnet-4-6
+```
+
+When a request fails, `llllm` retries the primary provider up to 5 times. If all 5 attempts fail, it will try the fallback target from `LLLLM_FALLBACK_MODEL` for another 5 attempts. If no fallback is configured, `llllm` raises an exception instead of silently choosing a default secondary provider.
+
+This helps when a provider is temporarily unavailable, rate-limited, or having transient request issues. It gives you a simple failover path without changing application code.
+
+Example:
+
+```python
+from llllm import LLLLM
+
+client = LLLLM("openai:gpt-5.4")
+response = client.gen("Summarize the latest incident notes")
+
+print(response["llllm_response"]["text"])
+```
+
+With:
+
+```bash
+export OPENAI_API_KEY=...
+export ANTHROPIC_API_KEY=...
+export LLLLM_FALLBACK_MODEL=claude:claude-sonnet-4-6
+```
+
+In that setup, `llllm` tries `openai:gpt-5.4` first. If 5 attempts fail, it logs that fallback is being used and then tries `claude:claude-sonnet-4-6` up to 5 times.
+
 `client.gen(...)` accepts:
 
 - A simple string prompt for all providers

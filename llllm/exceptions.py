@@ -15,3 +15,7 @@ class ProviderRequestError(LLLLMError):
 
 class InvalidInputError(LLLLMError):
     """Raised when a user input payload is not supported."""
+
+
+class ProviderFallbackError(LLLLMError):
+    """Raised when primary and fallback provider attempts are exhausted."""

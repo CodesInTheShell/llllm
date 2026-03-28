@@ -1,15 +1,19 @@
 import os
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from llllm import LLLLM
-from llllm.exceptions import InvalidInputError, ProviderConfigurationError
+from llllm.exceptions import (
+    InvalidInputError,
+    ProviderConfigurationError,
+    ProviderFallbackError,
+)
 from llllm.providers.claude import ClaudeProvider
 from llllm.providers.gemini import GeminiProvider
 from llllm.providers.ollama import OllamaProvider
 from llllm.providers.openai import OpenAIProvider
-from llllm.utils.config import parse_model_spec, resolve_api_key
+from llllm.utils.config import parse_model_spec, resolve_api_key, resolve_fallback_model
 
 
 class ConfigTests(unittest.TestCase):
@@ -29,6 +33,10 @@ class ConfigTests(unittest.TestCase):
     def test_resolve_api_key_from_environment(self):
         self.assertEqual(resolve_api_key("openai", None), "env-key")
 
+    @patch.dict(os.environ, {"LLLLM_FALLBACK_MODEL": "claude:claude-sonnet-4-6"}, clear=False)
+    def test_resolve_fallback_model_from_environment(self):
+        self.assertEqual(resolve_fallback_model(), "claude:claude-sonnet-4-6")
+
 
 class ClientTests(unittest.TestCase):
     def test_client_selects_provider(self):
@@ -40,6 +48,61 @@ class ClientTests(unittest.TestCase):
         client = LLLLM("openai:gpt-4.1", api_key="key")
         with self.assertRaises(InvalidInputError):
             client.gen(123)  # type: ignore[arg-type]
+
+    def test_client_retries_primary_provider_five_times(self):
+        client = LLLLM("openai:gpt-4.1", api_key="key")
+        client.provider.generate = MagicMock(side_effect=RuntimeError("boom"))
+
+        with self.assertLogs("llllm.core", level="WARNING") as log_context:
+            with self.assertRaises(ProviderConfigurationError):
+                client.gen("hello")
+
+        self.assertEqual(client.provider.generate.call_count, 5)
+        self.assertEqual(len(log_context.records), 5)
+
+    @patch.dict(os.environ, {"LLLLM_FALLBACK_MODEL": "claude:claude-sonnet-4-6"}, clear=False)
+    def test_client_uses_fallback_after_primary_failures(self):
+        client = LLLLM("openai:gpt-4.1", api_key="key")
+        client.provider.generate = MagicMock(side_effect=RuntimeError("primary failed"))
+
+        fallback_provider = MagicMock()
+        fallback_provider.generate.return_value = {"llllm_response": {"text": "fallback ok"}}
+
+        with patch.object(client, "_build_provider", return_value=fallback_provider):
+            with self.assertLogs("llllm.core", level="WARNING") as log_context:
+                result = client.gen("hello")
+
+        self.assertEqual(result["llllm_response"]["text"], "fallback ok")
+        self.assertEqual(client.provider.generate.call_count, 5)
+        self.assertEqual(fallback_provider.generate.call_count, 1)
+        self.assertTrue(
+            any("Switching to fallback provider claude:claude-sonnet-4-6" in message for message in log_context.output)
+        )
+
+    @patch.dict(os.environ, {"LLLLM_FALLBACK_MODEL": "claude:claude-sonnet-4-6"}, clear=False)
+    def test_client_retries_fallback_five_times(self):
+        client = LLLLM("openai:gpt-4.1", api_key="key")
+        client.provider.generate = MagicMock(side_effect=RuntimeError("primary failed"))
+
+        fallback_provider = MagicMock()
+        fallback_provider.generate = MagicMock(side_effect=RuntimeError("fallback failed"))
+
+        with patch.object(client, "_build_provider", return_value=fallback_provider):
+            with self.assertLogs("llllm.core", level="WARNING") as log_context:
+                with self.assertRaises(ProviderFallbackError):
+                    client.gen("hello")
+
+        self.assertEqual(client.provider.generate.call_count, 5)
+        self.assertEqual(fallback_provider.generate.call_count, 5)
+        self.assertEqual(len(log_context.records), 11)
+
+    @patch.dict(os.environ, {"LLLLM_FALLBACK_MODEL": "openai:gpt-4.1"}, clear=False)
+    def test_client_rejects_matching_fallback_model(self):
+        client = LLLLM("openai:gpt-4.1", api_key="key")
+        client.provider.generate = MagicMock(side_effect=RuntimeError("boom"))
+
+        with self.assertRaises(ProviderConfigurationError):
+            client.gen("hello")
 
 
 class ProviderNormalizationTests(unittest.TestCase):
