@@ -3,9 +3,9 @@
 
 LLLLM is built around the three major AI providers:
 
-Gemini
-Claude
-OpenAI
+- Gemini
+- Claude
+- OpenAI
 
 It also includes special support for Ollama and local models.
 
@@ -15,67 +15,77 @@ It is also lightweight in a practical engineering sense: LLLLM uses direct HTTP 
 
 LLLLM is a minimal, dependency-light Python library that provides a single unified interface for interacting with:
 
-OpenAI (via Responses API)
-Claude (Anthropic)
-Gemini (Google)
-Ollama (local models)
+- OpenAI via the Responses API
+- Claude via the Anthropic Messages API
+- Gemini via the Google Generative Language API
+- Ollama for local models
 
 It is designed to be:
 
-⚡ Lightweight — only uses requests for direct API calls, without vendor SDK dependencies
-🧩 Simple — one class, one method
-🔄 Standardized — same output across all providers
-🌐 Hybrid — supports both cloud and local models
+- ⚡ Lightweight — only uses requests for direct API calls, without vendor SDK dependencies
+- 🧩 Simple — one class, one method
+- 🔄 Standardized — same output across all providers
+- 🌐 Hybrid — supports both cloud and local models
 🎯 Problem It Solves
 
 Working with multiple LLM providers today means:
 
-Different SDKs and dependencies
-Different request/response formats
-No easy switching between providers
-Local models (Ollama) require separate handling
+- Different SDKs and dependencies
+- Different request/response formats
+- No easy switching between providers
+- Local models like Ollama require separate handling
 
 LLLLM solves this by:
 
-Using direct HTTP calls (no SDK lock-in)
-Providing a single interface across all providers
-Standardizing outputs
-Supporting both cloud + local models in one API
+- Using direct HTTP calls without SDK lock-in
+- Providing a single interface across all providers
+- Standardizing outputs
+- Supporting both cloud and local models in one API
 🧱 Core Design Philosophy
 
 “One client. One method. Any model — local or cloud.”
 
 🧩 Supported Providers
-Provider	Type	Notes
-OpenAI	Cloud	Uses Responses API
-Claude	Cloud	Anthropic Messages API
-Gemini	Cloud	Google Generative Language API
-Ollama	Local	Runs on localhost
+
+| Provider | Type | Notes |
+| --- | --- | --- |
+| OpenAI | Cloud | Uses the Responses API |
+| Claude | Cloud | Uses the Anthropic Messages API |
+| Gemini | Cloud | Uses the Google Generative Language API |
+| Ollama | Local | Runs on localhost |
+
 🧩 Core Features
 1. 🔌 Multi-Provider + Local Support
+```python
 client = LLLLM("openai:gpt-5.4")
 client = LLLLM("claude:claude-sonnet-4-6")
 client = LLLLM("gemini:gemini-3.1-pro-preview")
 client = LLLLM("ollama:gemma3")
+```
 2. 🧠 Unified Generation API
+```python
 response = client.gen("Explain OSINT in simple terms")
+```
 
 Same call works for:
 
-OpenAI
-Claude
-Gemini
-Ollama
+- OpenAI
+- Claude
+- Gemini
+- Ollama
 
 Structured role-based input is also supported for OpenAI, Claude, and Gemini:
 
+```python
 response = client.gen([
     {"role": "system", "content": "You are an OSINT analyst"},
     {"role": "user", "content": "Explain OSINT in simple terms"}
 ])
+```
 
 Multimodal content parts are also supported:
 
+```python
 response = client.gen([
     {
         "role": "user",
@@ -85,7 +95,9 @@ response = client.gen([
         ]
     }
 ])
+```
 
+```python
 response = client.gen([
     {
         "role": "user",
@@ -95,10 +107,12 @@ response = client.gen([
         ]
     }
 ])
+```
 3. 📦 Standardized Response Object
 
 All providers return the same structure:
 
+```python
 {
     "raw_response": {...},
     "llllm_response": {
@@ -113,72 +127,87 @@ All providers return the same structure:
         "finish_reason": str | None
     }
 }
+```
 4. 🌐 Hybrid Cloud + Local Usage
 
 Switch between cloud and local seamlessly:
 
+```python
 # Cloud
 client = LLLLM("openai:gpt-5.4")
 
 # Local
 client = LLLLM("ollama:gemma3")
+```
 
 No code changes needed.
 
 5. 🪶 Zero Heavy Dependencies
-Only dependency: requests
-No provider SDKs like `openai`, Anthropic SDKs, or Google Gemini client libraries
-No async frameworks
-No runtime bloat
+
+- Only dependency: `requests`
+- No provider SDKs like `openai`, Anthropic SDKs, or Google Gemini client libraries
+- No async frameworks
+- No runtime bloat
+
 6. 🔐 Flexible Authentication
+```python
 client = LLLLM("openai:gpt-5.4", api_key="your_key")
+```
 
 Or via environment variables:
 
+```bash
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 GEMINI_API_KEY=...
 LLLLM_FALLBACK_MODEL=claude:claude-sonnet-4-6
+```
 
 Ollama:
 
-No API key required
-Runs on http://localhost:11434
+- No API key required
+- Runs on `http://localhost:11434`
+
 Fallback behavior:
 
-LLLLM retries a failed primary request up to 5 times.
-If all 5 attempts fail, it checks `LLLLM_FALLBACK_MODEL`.
-If that environment variable is set, it switches to the configured secondary `provider:model` and retries that target up to 5 times as well.
-If no fallback target is configured, it raises an exception instead of guessing a default secondary provider.
+- LLLLM retries a failed primary request up to 5 times.
+- If all 5 attempts fail, it checks `LLLLM_FALLBACK_MODEL`.
+- If that environment variable is set, it switches to the configured secondary `provider:model` and retries that target up to 5 times as well.
+- If no fallback target is configured, it raises an exception instead of guessing a default secondary provider.
 
 Why this helps:
 
-It gives applications a simple resilience layer when a provider has temporary outages, request instability, or rate-limit issues.
-It also lets teams define their own backup provider strategy through environment configuration without hardcoding failover logic in application code.
+- It gives applications a simple resilience layer when a provider has temporary outages, request instability, or rate-limit issues.
+- It lets teams define their own backup provider strategy through environment configuration without hardcoding failover logic in application code.
+
 7. ⚙️ Minimal Parameter Interface
+```python
 response = client.gen(
     "Write a short intelligence report",
     temperature=0.7,
     max_tokens=300,
     system="You are an OSINT analyst"
 )
+```
 
 Mapped internally per provider.
 
 Input formats currently supported:
 
-Simple string input for all providers
-Role-based dict input for all providers
-Role-based list input for all providers
-Structured content parts for text, image, and file inputs
+- Simple string input for all providers
+- Role-based dict input for all providers
+- Role-based list input for all providers
+- Structured content parts for text, image, and file inputs
 
 Provider notes:
-OpenAI supports text, image, and file parts
-Claude supports text, image, and file/document parts
-Gemini supports text, image, and file parts
-Ollama supports text and image parts; non-image file parts are rejected
+
+- OpenAI supports text, image, and file parts
+- Claude supports text, image, and file/document parts
+- Gemini supports text, image, and file parts
+- Ollama supports text and image parts; non-image file parts are rejected
 
 🧪 Example Usage
+```python
 from llllm import LLLLM
 
 client = LLLLM("ollama:gemma3")
@@ -186,26 +215,32 @@ client = LLLLM("ollama:gemma3")
 res = client.gen("Summarize cyber threat intelligence")
 
 print(res["llllm_response"]["text"])
+```
 
 Fallback example:
 
 Set:
 
+```bash
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 LLLLM_FALLBACK_MODEL=claude:claude-sonnet-4-6
+```
 
 Then:
 
+```python
 from llllm import LLLLM
 
 client = LLLLM("openai:gpt-5.4")
 res = client.gen("Summarize cyber threat intelligence")
 
 print(res["llllm_response"]["text"])
+```
 
 In this setup, LLLLM tries OpenAI first. If 5 attempts fail, it logs the failure, logs that the fallback is being used, and then retries against Claude up to 5 times.
 🏗️ Architecture
+```text
 llllm/
 │
 ├── core.py
@@ -220,7 +255,9 @@ llllm/
 │   └── config.py
 │
 └── exceptions.py
+```
 🔄 Internal Flow
+```text
 User Input
    ↓
 LLLLM.gen()
@@ -234,24 +271,27 @@ Raw Response
 Normalizer
    ↓
 Standardized Output
+```
 📏 Standardization Strategy
 
 Each provider adapter must output:
-
+```
 {
     "text": str,
     "usage": {...},
     "finish_reason": str | None
 }
-
+```
 Then wrapped into:
-
+```
 {
     "raw_response": raw,
     "llllm_response": normalized
 }
+```
 🔧 Provider Implementation Notes
 OpenAI (Responses API)
+```text
 Endpoint: /v1/responses
 Input format:
 input
@@ -259,64 +299,77 @@ optional system
 Extract:
 output[0].content[0].text (or equivalent)
 Usage fields mapped to standard format
+```
 Claude
+```text
 Endpoint: /v1/messages
 Requires:
 x-api-key
 anthropic-version
 Message-based structure
+```
 Gemini
+```text
 REST endpoint
 Uses contents.parts
 Nested response parsing required
+```
 Ollama
-Endpoint: http://localhost:11434/api/generate
+```text
+Endpoint: http://localhost:11434/api/chat
 No API key
 Fast local inference
 May not return token usage → set as None
+```
 🧩 MVP Scope (v0.1)
-✅ Included
-Text generation
-4 providers (Big 3 + Ollama)
-Standardized response
-Sync API
-API key + env support
-❌ Not Included
-Streaming
-Async
-Function/tool calling
-Image/audio generation
-Conversation memory
-Retries/backoff
+
+Included:
+
+- Text generation
+- 4 providers: the Big 3 plus Ollama
+- Standardized response format
+- Sync API
+- API key and environment variable support
+- Primary retry plus secondary fallback via environment variable
+
+Not included:
+
+- Streaming
+- Async
+- Function or tool calling
+- Image or audio generation
+- Conversation memory
+
 🗺️ Roadmap
-v0.2
-Streaming support
-Retry logic
-Better error mapping
-v0.3
-Function/tool abstraction
-Structured outputs
-v0.4
-Async support
-Middleware/hooks
-🆚 Positioning vs LiteLLM
-Feature	LLLLM	LiteLLM
-Dependencies	Minimal	Heavy
-Local Model Support	✅	Partial
-API Simplicity	Very High	Medium
-Use Case	Dev-first, simple	Enterprise routing
-Setup Complexity	Very Low	Medium
+
+v0.2:
+
+- Streaming support
+- Better error mapping
+
+v0.3:
+
+- Function or tool abstraction
+- Structured outputs
+
+v0.4:
+
+- Async support
+- Middleware and hooks
+
 💡 Key Value Proposition
 
 “Switch between OpenAI, Claude, Gemini, and Ollama with one line — no SDKs, no complexity.”
 
 🧠 Taglines
-“One interface. Local + Cloud LLMs.”
-“From GPT to LLaMA — same code.”
-“Minimal wrapper for maximum flexibility.”
+
+- “One interface. Local + Cloud LLMs.”
+- “From GPT to LLaMA — same code.”
+- “Minimal wrapper for maximum flexibility.”
+
 ⚡ Design Principles
-Keep abstraction shallow
-Do not hide provider behavior unnecessarily
-Always return raw response
-Standardize only what matters
-Stay smaller than LiteLLM
+
+- Keep abstraction shallow
+- Do not hide provider behavior unnecessarily
+- Always return raw response
+- Standardize only what matters

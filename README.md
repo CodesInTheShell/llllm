@@ -99,25 +99,16 @@ Editable mode is useful because if `llllm` changes locally, your project will pi
 
 ### 5. Set Environment Variables For Cloud Providers
 
-OpenAI:
-
 ```bash
 export OPENAI_API_KEY=your_openai_key
-```
-
-Claude:
-
-```bash
 export ANTHROPIC_API_KEY=your_anthropic_key
-```
-
-Gemini:
-
-```bash
 export GEMINI_API_KEY=your_gemini_key
 ```
 
-For local usage with Ollama, no API key is required. Ollama should be running on `http://localhost:11434`.
+For local usage with Ollama:
+
+- No API key is required
+- Ollama should be running on `http://localhost:11434`
 
 ### 6. Import `llllm` In Your Project Code
 
@@ -357,13 +348,19 @@ In that setup, `llllm` tries `openai:gpt-5.4` first. If 5 attempts fail, it logs
 
 Examples:
 
+Simple string:
+
 ```python
 client.gen("Explain OSINT in simple terms")
 ```
 
+Single role-based message:
+
 ```python
 client.gen({"role": "user", "content": "Explain OSINT in simple terms"})
 ```
+
+Role-based message list:
 
 ```python
 client.gen(
@@ -373,6 +370,8 @@ client.gen(
     ]
 )
 ```
+
+Structured image content:
 
 ```python
 client.gen(
@@ -387,6 +386,8 @@ client.gen(
     ]
 )
 ```
+
+Structured file content:
 
 ```python
 client.gen(
