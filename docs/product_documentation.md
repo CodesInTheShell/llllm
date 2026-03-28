@@ -1,12 +1,17 @@
 🧠 Product Documentation: LLLLM (Lightweight Local & Large Language Model Wrapper)
 🚀 Overview
 
-The four Ls in LLLLM refer to:
+LLLLM is built around the three major AI providers:
 
-Local models, mainly via Ollama
-Claude
 Gemini
+Claude
 OpenAI
+
+It also includes special support for Ollama and local models.
+
+The thinking behind the project is simple: the author believes the big three providers are already more than enough to build real AI systems and products. The dedicated support for Ollama reflects a second belief that open models will keep getting smaller and smarter, while the hardware needed to run AI models locally will keep getting cheaper.
+
+It is also lightweight in a practical engineering sense: LLLLM uses direct HTTP requests through `requests` instead of depending on vendor SDKs. You do not need to install extra packages such as the OpenAI Python library, Anthropic SDK, or Google's Gemini client library just to call the APIs.
 
 LLLLM is a minimal, dependency-light Python library that provides a single unified interface for interacting with:
 
@@ -17,7 +22,7 @@ Ollama (local models)
 
 It is designed to be:
 
-⚡ Lightweight — only uses requests
+⚡ Lightweight — only uses requests for direct API calls, without vendor SDK dependencies
 🧩 Simple — one class, one method
 🔄 Standardized — same output across all providers
 🌐 Hybrid — supports both cloud and local models
@@ -48,10 +53,10 @@ Gemini	Cloud	Google Generative Language API
 Ollama	Local	Runs on localhost
 🧩 Core Features
 1. 🔌 Multi-Provider + Local Support
-client = LLLLM("openai:gpt-4.1")
-client = LLLLM("claude:claude-3-7-sonnet")
-client = LLLLM("gemini:gemini-1.5-pro")
-client = LLLLM("ollama:llama3")
+client = LLLLM("openai:gpt-5.4")
+client = LLLLM("claude:claude-sonnet-4-6")
+client = LLLLM("gemini:gemini-3.1-pro-preview")
+client = LLLLM("ollama:gemma3")
 2. 🧠 Unified Generation API
 response = client.gen("Explain OSINT in simple terms")
 
@@ -113,20 +118,20 @@ All providers return the same structure:
 Switch between cloud and local seamlessly:
 
 # Cloud
-client = LLLLM("openai:gpt-4.1")
+client = LLLLM("openai:gpt-5.4")
 
 # Local
-client = LLLLM("ollama:llama3")
+client = LLLLM("ollama:gemma3")
 
 No code changes needed.
 
 5. 🪶 Zero Heavy Dependencies
 Only dependency: requests
-No provider SDKs
+No provider SDKs like `openai`, Anthropic SDKs, or Google Gemini client libraries
 No async frameworks
 No runtime bloat
 6. 🔐 Flexible Authentication
-client = LLLLM("openai:gpt-4.1", api_key="your_key")
+client = LLLLM("openai:gpt-5.4", api_key="your_key")
 
 Or via environment variables:
 
@@ -164,7 +169,7 @@ Ollama supports text and image parts; non-image file parts are rejected
 🧪 Example Usage
 from llllm import LLLLM
 
-client = LLLLM("ollama:llama3")
+client = LLLLM("ollama:gemma3")
 
 res = client.gen("Summarize cyber threat intelligence")
 

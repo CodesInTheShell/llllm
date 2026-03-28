@@ -23,7 +23,9 @@ class GeminiProvider(BaseProvider):
         return f"/v1beta/models/{self.model}:generateContent"
 
     def build_headers(self) -> dict[str, str]:
-        return super().build_headers()
+        headers = super().build_headers()
+        headers["x-goog-api-key"] = self.require_api_key()
+        return headers
 
     def build_payload(
         self,
@@ -51,10 +53,6 @@ class GeminiProvider(BaseProvider):
             payload["systemInstruction"] = {"parts": [{"text": system_value}]}
         payload.update(kwargs)
         return payload
-
-    def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
-        api_key = self.require_api_key()
-        return super()._post(f"{path}?key={api_key}", payload)
 
     def normalize_response(self, raw_response: dict[str, Any]) -> dict[str, Any]:
         text_parts: list[str] = []

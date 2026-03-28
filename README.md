@@ -4,12 +4,17 @@
 
 Lightweight Local & Large Language Model Wrapper.
 
-The four Ls in `LLLLM` refer to:
+`LLLLM` is built around the three major AI providers:
 
-- Local models, mainly via Ollama
-- Large language models from Claude
-- Large language models from Gemini
-- Large language models from OpenAI
+- Gemini
+- Claude
+- OpenAI
+
+It also includes special support for Ollama and local models.
+
+The idea behind `LLLLM` is straightforward: the author believes the big three providers are more than enough to build serious AI systems and products today. The added focus on local models through Ollama reflects a second belief: open models will keep getting smaller and smarter, and the hardware needed to run them will keep getting cheaper.
+
+It is also lightweight in a very practical sense: `llllm` talks to provider APIs through direct HTTP requests using `requests`, instead of requiring heavyweight vendor SDKs. That means you do not need to install separate packages such as the OpenAI library, Anthropic SDK, or Google's Gemini client just to make basic API calls.
 
 `llllm` is a minimal Python package that provides one sync interface for:
 
@@ -125,25 +130,25 @@ from llllm import LLLLM
 Ollama:
 
 ```python
-client = LLLLM("ollama:llama3")
+client = LLLLM("ollama:gemma3")
 ```
 
 OpenAI:
 
 ```python
-client = LLLLM("openai:gpt-4.1")
+client = LLLLM("openai:gpt-5.4")
 ```
 
 Claude:
 
 ```python
-client = LLLLM("claude:claude-3-7-sonnet")
+client = LLLLM("claude:claude-sonnet-4-6")
 ```
 
 Gemini:
 
 ```python
-client = LLLLM("gemini:gemini-1.5-pro")
+client = LLLLM("gemini:gemini-3.1-pro-preview")
 ```
 
 ### 8. Generate Text
@@ -202,7 +207,7 @@ response = client.gen(
 ```python
 from llllm import LLLLM
 
-client = LLLLM("ollama:llama3")
+client = LLLLM("ollama:gemma3")
 response = client.gen(
     "Summarize cyber threat intelligence",
     temperature=0.7,
@@ -227,7 +232,7 @@ You do not need to copy files from this repository into your own project. You on
 ```python
 from llllm import LLLLM
 
-client = LLLLM("ollama:llama3")
+client = LLLLM("ollama:gemma3")
 response = client.gen(
     "Summarize cyber threat intelligence",
     temperature=0.7,
@@ -247,7 +252,7 @@ from llllm import LLLLM
 with open("image.png", "rb") as f:
     image_b64 = base64.b64encode(f.read()).decode("ascii")
 
-client = LLLLM("openai:gpt-4.1")
+client = LLLLM("openai:gpt-5.4")
 response = client.gen(
     [
         {
@@ -277,7 +282,7 @@ from llllm import LLLLM
 with open("report.pdf", "rb") as f:
     file_b64 = base64.b64encode(f.read()).decode("ascii")
 
-client = LLLLM("gemini:gemini-1.5-pro")
+client = LLLLM("gemini:gemini-3.1-pro-preview")
 response = client.gen(
     [
         {
@@ -301,7 +306,7 @@ print(response["llllm_response"]["text"])
 Cloud providers can use explicit keys:
 
 ```python
-client = LLLLM("openai:gpt-4.1", api_key="your_key")
+client = LLLLM("openai:gpt-5.4", api_key="your_key")
 ```
 
 Or environment variables:
