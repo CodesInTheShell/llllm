@@ -1,0 +1,286 @@
+🧠 Product Documentation: LLLLM (Lightweight Local & Large Language Model Wrapper)
+🚀 Overview
+
+The four Ls in LLLLM refer to:
+
+Local models, mainly via Ollama
+Claude
+Gemini
+OpenAI
+
+LLLLM is a minimal, dependency-light Python library that provides a single unified interface for interacting with:
+
+OpenAI (via Responses API)
+Claude (Anthropic)
+Gemini (Google)
+Ollama (local models)
+
+It is designed to be:
+
+⚡ Lightweight — only uses requests
+🧩 Simple — one class, one method
+🔄 Standardized — same output across all providers
+🌐 Hybrid — supports both cloud and local models
+🎯 Problem It Solves
+
+Working with multiple LLM providers today means:
+
+Different SDKs and dependencies
+Different request/response formats
+No easy switching between providers
+Local models (Ollama) require separate handling
+
+LLLLM solves this by:
+
+Using direct HTTP calls (no SDK lock-in)
+Providing a single interface across all providers
+Standardizing outputs
+Supporting both cloud + local models in one API
+🧱 Core Design Philosophy
+
+“One client. One method. Any model — local or cloud.”
+
+🧩 Supported Providers
+Provider	Type	Notes
+OpenAI	Cloud	Uses Responses API
+Claude	Cloud	Anthropic Messages API
+Gemini	Cloud	Google Generative Language API
+Ollama	Local	Runs on localhost
+🧩 Core Features
+1. 🔌 Multi-Provider + Local Support
+client = LLLLM("openai:gpt-4.1")
+client = LLLLM("claude:claude-3-7-sonnet")
+client = LLLLM("gemini:gemini-1.5-pro")
+client = LLLLM("ollama:llama3")
+2. 🧠 Unified Generation API
+response = client.gen("Explain OSINT in simple terms")
+
+Same call works for:
+
+OpenAI
+Claude
+Gemini
+Ollama
+
+Structured role-based input is also supported for OpenAI, Claude, and Gemini:
+
+response = client.gen([
+    {"role": "system", "content": "You are an OSINT analyst"},
+    {"role": "user", "content": "Explain OSINT in simple terms"}
+])
+
+Multimodal content parts are also supported:
+
+response = client.gen([
+    {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Describe this image"},
+            {"type": "image", "path": "./image.png"}
+        ]
+    }
+])
+
+response = client.gen([
+    {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Summarize this file"},
+            {"type": "file", "path": "./report.pdf"}
+        ]
+    }
+])
+3. 📦 Standardized Response Object
+
+All providers return the same structure:
+
+{
+    "raw_response": {...},
+    "llllm_response": {
+        "text": "...",
+        "provider": "...",
+        "model": "...",
+        "usage": {
+            "input_tokens": int | None,
+            "output_tokens": int | None,
+            "total_tokens": int | None
+        },
+        "finish_reason": str | None
+    }
+}
+4. 🌐 Hybrid Cloud + Local Usage
+
+Switch between cloud and local seamlessly:
+
+# Cloud
+client = LLLLM("openai:gpt-4.1")
+
+# Local
+client = LLLLM("ollama:llama3")
+
+No code changes needed.
+
+5. 🪶 Zero Heavy Dependencies
+Only dependency: requests
+No provider SDKs
+No async frameworks
+No runtime bloat
+6. 🔐 Flexible Authentication
+client = LLLLM("openai:gpt-4.1", api_key="your_key")
+
+Or via environment variables:
+
+OPENAI_API_KEY=...
+ANTHROPIC_API_KEY=...
+GEMINI_API_KEY=...
+
+Ollama:
+
+No API key required
+Runs on http://localhost:11434
+7. ⚙️ Minimal Parameter Interface
+response = client.gen(
+    "Write a short intelligence report",
+    temperature=0.7,
+    max_tokens=300,
+    system="You are an OSINT analyst"
+)
+
+Mapped internally per provider.
+
+Input formats currently supported:
+
+Simple string input for all providers
+Role-based dict input for all providers
+Role-based list input for all providers
+Structured content parts for text, image, and file inputs
+
+Provider notes:
+OpenAI supports text, image, and file parts
+Claude supports text, image, and file/document parts
+Gemini supports text, image, and file parts
+Ollama supports text and image parts; non-image file parts are rejected
+
+🧪 Example Usage
+from llllm import LLLLM
+
+client = LLLLM("ollama:llama3")
+
+res = client.gen("Summarize cyber threat intelligence")
+
+print(res["llllm_response"]["text"])
+🏗️ Architecture
+llllm/
+│
+├── core.py
+├── providers/
+│   ├── openai.py      # Responses API
+│   ├── claude.py
+│   ├── gemini.py
+│   └── ollama.py      # local
+│
+├── utils/
+│   ├── normalize.py
+│   └── config.py
+│
+└── exceptions.py
+🔄 Internal Flow
+User Input
+   ↓
+LLLLM.gen()
+   ↓
+Provider Adapter (openai / claude / gemini / ollama)
+   ↓
+HTTP Request (requests)
+   ↓
+Raw Response
+   ↓
+Normalizer
+   ↓
+Standardized Output
+📏 Standardization Strategy
+
+Each provider adapter must output:
+
+{
+    "text": str,
+    "usage": {...},
+    "finish_reason": str | None
+}
+
+Then wrapped into:
+
+{
+    "raw_response": raw,
+    "llllm_response": normalized
+}
+🔧 Provider Implementation Notes
+OpenAI (Responses API)
+Endpoint: /v1/responses
+Input format:
+input
+optional system
+Extract:
+output[0].content[0].text (or equivalent)
+Usage fields mapped to standard format
+Claude
+Endpoint: /v1/messages
+Requires:
+x-api-key
+anthropic-version
+Message-based structure
+Gemini
+REST endpoint
+Uses contents.parts
+Nested response parsing required
+Ollama
+Endpoint: http://localhost:11434/api/generate
+No API key
+Fast local inference
+May not return token usage → set as None
+🧩 MVP Scope (v0.1)
+✅ Included
+Text generation
+4 providers (Big 3 + Ollama)
+Standardized response
+Sync API
+API key + env support
+❌ Not Included
+Streaming
+Async
+Function/tool calling
+Image/audio generation
+Conversation memory
+Retries/backoff
+🗺️ Roadmap
+v0.2
+Streaming support
+Retry logic
+Better error mapping
+v0.3
+Function/tool abstraction
+Structured outputs
+v0.4
+Async support
+Middleware/hooks
+🆚 Positioning vs LiteLLM
+Feature	LLLLM	LiteLLM
+Dependencies	Minimal	Heavy
+Local Model Support	✅	Partial
+API Simplicity	Very High	Medium
+Use Case	Dev-first, simple	Enterprise routing
+Setup Complexity	Very Low	Medium
+💡 Key Value Proposition
+
+“Switch between OpenAI, Claude, Gemini, and Ollama with one line — no SDKs, no complexity.”
+
+🧠 Taglines
+“One interface. Local + Cloud LLMs.”
+“From GPT to LLaMA — same code.”
+“Minimal wrapper for maximum flexibility.”
+⚡ Design Principles
+Keep abstraction shallow
+Do not hide provider behavior unnecessarily
+Always return raw response
+Standardize only what matters
+Stay smaller than LiteLLM
