@@ -1,7 +1,5 @@
 # llllm
 
-![LLLLM Logo](docs/lllm_logo.png)
-
 Lightweight Local & Large Language Model Wrapper.
 
 `LLLLM` is built around the three major AI providers:
@@ -25,8 +23,28 @@ It is also lightweight in a very practical sense: `llllm` talks to provider APIs
 
 ## Install
 
+Install directly into your project from GitHub:
+
+```bash
+pip install git+https://github.com/CodesInTheShell/llllm.git
+```
+
+Using `uv`:
+
+```bash
+uv pip install git+https://github.com/CodesInTheShell/llllm.git
+```
+
+For local development from a clone of this repository:
+
 ```bash
 pip install -e .
+```
+
+If you already cloned the repo and want a standard non-editable local install:
+
+```bash
+pip install .
 ```
 
 ## Step-by-Step Setup
@@ -77,7 +95,19 @@ Using a virtual environment is recommended so your project dependencies, includi
 
 ### 4. Install `llllm` Into Your Project
 
-Install directly from the local clone:
+Install directly from GitHub:
+
+```bash
+pip install git+https://github.com/CodesInTheShell/llllm.git
+```
+
+With `uv`:
+
+```bash
+uv pip install git+https://github.com/CodesInTheShell/llllm.git
+```
+
+If you want to install directly from a local clone instead:
 
 ```bash
 pip install -e /path/to/llllm
@@ -97,7 +127,40 @@ uv pip install -e /path/to/llllm
 
 Editable mode is useful because if `llllm` changes locally, your project will pick up those changes without a reinstall.
 
-### 5. Set Environment Variables For Cloud Providers
+If you want a standard non-editable install from the repo checkout instead:
+
+```bash
+pip install /path/to/llllm
+```
+
+To build distributable artifacts from the repo:
+
+```bash
+python -m build
+```
+
+This produces a wheel and source distribution in `dist/`.
+
+### 5. Import `llllm` In Your Project Code
+
+Once installed, use it like any other Python library dependency:
+
+```python
+from llllm import LLLLM
+```
+
+Example:
+
+```python
+from llllm import LLLLM
+
+client = LLLLM("openai:gpt-5.4")
+response = client.gen("Explain OSINT in simple terms")
+
+print(response["llllm_response"]["text"])
+```
+
+### 6. Set Environment Variables For Cloud Providers
 
 ```bash
 export OPENAI_API_KEY=your_openai_key
@@ -109,12 +172,6 @@ For local usage with Ollama:
 
 - No API key is required
 - Ollama should be running on `http://localhost:11434`
-
-### 6. Import `llllm` In Your Project Code
-
-```python
-from llllm import LLLLM
-```
 
 ### 7. Create A Client
 

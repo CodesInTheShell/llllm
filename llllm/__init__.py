@@ -1,5 +1,7 @@
 """Public package interface for llllm."""
 
+__version__ = "0.1.0"
+
 from .core import LLLLM
 from .exceptions import (
     InvalidInputError,
@@ -10,6 +12,7 @@ from .exceptions import (
 )
 
 __all__ = [
+    "__version__",
     "LLLLM",
     "InvalidInputError",
     "LLLLMError",

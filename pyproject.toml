@@ -8,16 +8,35 @@ version = "0.1.0"
 description = "Lightweight Local & Large Language Model Wrapper"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
-  { name = "dantbytes" }
+  { name = "CodesInTheShell" }
 ]
 dependencies = [
   "requests>=2.31.0",
 ]
+keywords = ["llm", "ai", "openai", "anthropic", "gemini", "ollama"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/CodesInTheShell/llllm"
+Repository = "https://github.com/CodesInTheShell/llllm"
+Issues = "https://github.com/CodesInTheShell/llllm/issues"
 
 [tool.setuptools]
 include-package-data = true
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 include = ["llllm*"]
