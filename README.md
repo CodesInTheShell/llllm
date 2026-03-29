@@ -51,16 +51,7 @@ pip install .
 
 If you are starting a new Python project or already have an existing one and want to import `llllm`, follow these steps.
 
-### 1. Clone The `llllm` Repository
-
-```bash
-git clone git@github.com:CodesInTheShell/llllm.git
-cd llllm
-```
-
-This gives you a local copy of the library that you can install into your own project.
-
-### 2. Create Or Open Your Own Project
+### 1. Create Or Open Your Own Project
 
 If you are starting a new project:
 
@@ -75,7 +66,7 @@ If you already have an existing project:
 cd /path/to/your-project
 ```
 
-### 3. Create A Virtual Environment
+### 2. Create A Virtual Environment
 
 Using Python `venv`:
 
@@ -93,7 +84,7 @@ source .venv/bin/activate
 
 Using a virtual environment is recommended so your project dependencies, including `llllm`, stay isolated from your global Python installation.
 
-### 4. Install `llllm` Into Your Project
+### 3. Install `llllm` Into Your Project
 
 Install directly from GitHub:
 
@@ -107,41 +98,7 @@ With `uv`:
 uv pip install git+https://github.com/CodesInTheShell/llllm.git
 ```
 
-If you want to install directly from a local clone instead:
-
-```bash
-pip install -e /path/to/llllm
-```
-
-If your clone is at `~/llllm`, that would be:
-
-```bash
-pip install -e ~/llllm
-```
-
-If you are using `uv`, the equivalent is:
-
-```bash
-uv pip install -e /path/to/llllm
-```
-
-Editable mode is useful because if `llllm` changes locally, your project will pick up those changes without a reinstall.
-
-If you want a standard non-editable install from the repo checkout instead:
-
-```bash
-pip install /path/to/llllm
-```
-
-To build distributable artifacts from the repo:
-
-```bash
-python -m build
-```
-
-This produces a wheel and source distribution in `dist/`.
-
-### 5. Import `llllm` In Your Project Code
+### 4. Import `llllm` In Your Project Code
 
 Once installed, use it like any other Python library dependency:
 
@@ -160,7 +117,7 @@ response = client.gen("Explain OSINT in simple terms")
 print(response["llllm_response"]["text"])
 ```
 
-### 6. Set Environment Variables For Cloud Providers
+### 5. Set Environment Variables For Cloud Providers
 
 ```bash
 export OPENAI_API_KEY=your_openai_key
@@ -173,7 +130,7 @@ For local usage with Ollama:
 - No API key is required
 - Ollama should be running on `http://localhost:11434`
 
-### 7. Create A Client
+### 6. Create A Client
 
 Ollama:
 
@@ -199,7 +156,7 @@ Gemini:
 client = LLLLM("gemini:gemini-3.1-pro-preview")
 ```
 
-### 8. Generate Text
+### 7. Generate Text
 
 ```python
 response = client.gen("Explain OSINT in simple terms")
