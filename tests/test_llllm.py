@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from llllm import LLLLM
+from llllm import LLLLM, __version__
 from llllm.exceptions import (
     InvalidInputError,
     ProviderConfigurationError,
@@ -17,6 +17,9 @@ from llllm.utils.config import parse_model_spec, resolve_api_key, resolve_fallba
 
 
 class ConfigTests(unittest.TestCase):
+    def test_package_exposes_version(self):
+        self.assertEqual(__version__, "0.1.0")
+
     def test_parse_model_spec(self):
         provider, model = parse_model_spec("openai:gpt-4.1")
         self.assertEqual(provider, "openai")
